@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Домашни задачи</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        header {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .selection {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        select {
+            padding: 12px;
+            margin: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .task {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        }
+
+        .task h3 {
+            color: #1e3a8a;
+        }
+
+        .date {
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📝 Домашни задачи</h1>
+    <p>Изберете одделение и предмет</p>
+</header>
+
+<div class="container">
+
+    <div class="selection">
+
+        <label>
+            Одделение:
+            <select id="grade">
+                <option value="">-- Избери --</option>
+                <option value="VI">VI одделение</option>
+                <option value="VII">VII одделение</option>
+                <option value="VIII">VIII одделение</option>
+                <option value="IX">IX одделение</option>
+            </select>
+        </label>
+
+        <label>
+            Предмет:
+            <select id="subject">
+                <option value="">-- Избери --</option>
+                <option value="matematika">Математика</option>
+                <option value="informatika">Информатика</option>
+                <option value="fizika">Физика</option>
+                <option value="tehnicko">Техничко образование</option>
+            </select>
+        </label>
+
+    </div>
+
+    <div id="tasks">
+
+        <div class="task">
+            <h3>📝 Линеарни равенки</h3>
+
+            <p>
+                Решете ги задачите 1–10 од учебникот.
+            </p>
+
+            <div class="date">
+                📅 Дадено: 30.09.2026
+                <br>
+                ⏰ Рок: 02.10.2026
+            </div>
+        </div>
+
+        <div class="task">
+            <h3>💻 Повторување на информатика</h3>
+
+            <p>
+                Повторете ја лекцијата за основните поими
+                од информатиката.
+            </p>
+
+            <div class="date">
+                📅 Дадено: 30.09.2026
+                <br>
+                ⏰ Рок: 03.10.2026
+            </div>
+        </div>
+
+    </div>
+
+    <a class="back" href="index.html">
+        ← Назад кон почетната страница
+    </a>
+
+</div>
+
+</body>
+</html>
