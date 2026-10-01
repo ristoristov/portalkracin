@@ -27,8 +27,12 @@
             text-align: center;
         }
 
+        header h1 {
+            margin: 0 0 8px 0;
+        }
+
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 30px auto;
             padding: 20px;
         }
@@ -70,26 +74,44 @@
         button {
             border: none;
             border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
+            padding: 11px 18px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
         }
 
         .login-button,
-        .add-button {
+        .add-button,
+        .save-button {
             background: #2563eb;
             color: white;
+        }
+
+        .edit-button {
+            background: #f59e0b;
+            color: white;
+            margin-right: 8px;
+        }
+
+        .delete-button {
+            background: #dc2626;
+            color: white;
+        }
+
+        .cancel-button {
+            background: #6b7280;
+            color: white;
+            margin-left: 8px;
         }
 
         .logout-button {
             background: #dc2626;
             color: white;
-        }
-
-        button:hover {
-            opacity: 0.9;
         }
 
         .hidden {
@@ -115,13 +137,21 @@
             margin-top: 0;
         }
 
-        .task-buttons button {
-            margin-right: 8px;
+        .task-info {
+            color: #555;
+            margin-top: 12px;
         }
 
-        .delete-button {
-            background: #dc2626;
-            color: white;
+        .task-buttons {
+            margin-top: 10px;
+        }
+
+        .edit-box {
+            margin-top: 15px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #ddd;
         }
     </style>
 </head>
@@ -141,17 +171,33 @@
 
         <h2>🔐 Најава</h2>
 
-        <label for="email">Е-mail</label>
-        <input type="email" id="email" placeholder="Внесете e-mail">
+        <label for="email">E-mail</label>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Внесете e-mail"
+        >
 
         <label for="password">Лозинка</label>
-        <input type="password" id="password" placeholder="Внесете лозинка">
 
-        <button class="login-button" onclick="login()">
+        <input
+            type="password"
+            id="password"
+            placeholder="Внесете лозинка"
+        >
+
+        <button
+            class="login-button"
+            onclick="login()"
+        >
             НАЈАВИ СЕ
         </button>
 
-        <div id="loginMessage" class="message hidden"></div>
+        <div
+            id="loginMessage"
+            class="message hidden"
+        ></div>
 
     </div>
 
@@ -159,6 +205,8 @@
     <!-- НАСТАВНИЧКИ ПАНЕЛ -->
 
     <div id="teacherPanel" class="hidden">
+
+        <!-- ДОДАВАЊЕ -->
 
         <div class="box">
 
@@ -173,16 +221,16 @@
                 <option value="IX">IX одделение</option>
             </select>
 
-
             <label for="subject">Предмет</label>
 
             <select id="subject">
                 <option value="Математика">Математика</option>
                 <option value="Информатика">Информатика</option>
                 <option value="Физика">Физика</option>
-                <option value="Техничко образование">Техничко образование</option>
+                <option value="Техничко образование">
+                    Техничко образование
+                </option>
             </select>
-
 
             <label for="title">Наслов</label>
 
@@ -192,7 +240,6 @@
                 placeholder="Пример: Линеарни равенки"
             >
 
-
             <label for="description">Опис на задачата</label>
 
             <textarea
@@ -200,22 +247,31 @@
                 placeholder="Внесете ја домашната задача..."
             ></textarea>
 
-
             <label for="date">Датум</label>
 
-            <input type="date" id="date">
-
+            <input
+                type="date"
+                id="date"
+            >
 
             <label for="deadline">Рок</label>
 
-            <input type="date" id="deadline">
+            <input
+                type="date"
+                id="deadline"
+            >
 
-
-            <button class="add-button" onclick="addTask()">
+            <button
+                class="add-button"
+                onclick="addTask()"
+            >
                 ➕ ДОДАЈ ДОМАШНА ЗАДАЧА
             </button>
 
-            <div id="addMessage" class="message hidden"></div>
+            <div
+                id="addMessage"
+                class="message hidden"
+            ></div>
 
         </div>
 
@@ -232,6 +288,8 @@
 
         </div>
 
+
+        <!-- ОДЈАВА -->
 
         <div class="box">
 
@@ -275,7 +333,7 @@
     async function login() {
 
         const email =
-            document.getElementById("email").value;
+            document.getElementById("email").value.trim();
 
         const password =
             document.getElementById("password").value;
@@ -284,7 +342,7 @@
             document.getElementById("loginMessage");
 
 
-        const { data, error } =
+        const { error } =
             await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -336,7 +394,7 @@
 
 
     // ======================================
-    // ДОДАВАЊЕ ДОМАШНА ЗАДАЧА
+    // ДОДАВАЊЕ ЗАДАЧА
     // ======================================
 
     async function addTask() {
@@ -348,10 +406,10 @@
             document.getElementById("subject").value;
 
         const title =
-            document.getElementById("title").value;
+            document.getElementById("title").value.trim();
 
         const description =
-            document.getElementById("description").value;
+            document.getElementById("description").value.trim();
 
         const date =
             document.getElementById("date").value;
@@ -378,14 +436,12 @@
             await supabaseClient
                 .from("domasni_zadaci")
                 .insert([{
-
                     naslov: title,
                     opis: description,
                     predmet: subject,
                     oddelenie: grade,
                     datum: date,
                     rok: deadline
-
                 }]);
 
 
@@ -439,6 +495,8 @@
 
         if (error) {
 
+            console.error(error);
+
             taskList.textContent =
                 "❌ Не може да се вчитаат задачите.";
 
@@ -483,22 +541,312 @@
             const info =
                 document.createElement("p");
 
+            info.className = "task-info";
+
             info.textContent =
-                "📚 " + task.oddelenie +
-                " | " + task.predmet +
+                "📚 " +
+                task.oddelenie +
+                " | " +
+                task.predmet +
+                " | 📅 " +
+                task.datum +
                 " | ⏰ Рок: " +
                 task.rok;
+
+
+            const buttons =
+                document.createElement("div");
+
+            buttons.className =
+                "task-buttons";
+
+
+            // КОПЧЕ ИЗМЕНИ
+
+            const editButton =
+                document.createElement("button");
+
+            editButton.className =
+                "edit-button";
+
+            editButton.textContent =
+                "✏️ Измени";
+
+            editButton.onclick =
+                function() {
+                    showEditForm(task);
+                };
+
+
+            // КОПЧЕ ИЗБРИШИ
+
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.className =
+                "delete-button";
+
+            deleteButton.textContent =
+                "🗑️ Избриши";
+
+            deleteButton.onclick =
+                function() {
+                    deleteTask(task.id);
+                };
+
+
+            buttons.appendChild(editButton);
+            buttons.appendChild(deleteButton);
 
 
             div.appendChild(title);
             div.appendChild(description);
             div.appendChild(info);
+            div.appendChild(buttons);
 
 
             taskList.appendChild(div);
 
         });
 
+    }
+
+
+    // ======================================
+    // ФОРМА ЗА ИЗМЕНА
+    // ======================================
+
+    function showEditForm(task) {
+
+        const taskList =
+            document.getElementById("taskList");
+
+
+        const editBox =
+            document.createElement("div");
+
+        editBox.className =
+            "edit-box";
+
+
+        editBox.innerHTML = `
+
+            <h3>✏️ Измени задача</h3>
+
+            <label>Одделение</label>
+
+            <select id="editGrade">
+
+                <option value="VI">VI одделение</option>
+
+                <option value="VII">VII одделение</option>
+
+                <option value="VIII">VIII одделение</option>
+
+                <option value="IX">IX одделение</option>
+
+            </select>
+
+
+            <label>Предмет</label>
+
+            <select id="editSubject">
+
+                <option value="Математика">Математика</option>
+
+                <option value="Информатика">Информатика</option>
+
+                <option value="Физика">Физика</option>
+
+                <option value="Техничко образование">
+                    Техничко образование
+                </option>
+
+            </select>
+
+
+            <label>Наслов</label>
+
+            <input
+                type="text"
+                id="editTitle"
+            >
+
+
+            <label>Опис</label>
+
+            <textarea
+                id="editDescription"
+            ></textarea>
+
+
+            <label>Датум</label>
+
+            <input
+                type="date"
+                id="editDate"
+            >
+
+
+            <label>Рок</label>
+
+            <input
+                type="date"
+                id="editDeadline"
+            >
+
+
+            <button
+                class="save-button"
+                onclick="saveEdit(${task.id})"
+            >
+                💾 Зачувај промени
+            </button>
+
+            <button
+                class="cancel-button"
+                onclick="loadTasks()"
+            >
+                Откажи
+            </button>
+        `;
+
+
+        editBox.querySelector("#editGrade").value =
+            task.oddelenie;
+
+        editBox.querySelector("#editSubject").value =
+            task.predmet;
+
+        editBox.querySelector("#editTitle").value =
+            task.naslov;
+
+        editBox.querySelector("#editDescription").value =
+            task.opis;
+
+        editBox.querySelector("#editDate").value =
+            task.datum;
+
+        editBox.querySelector("#editDeadline").value =
+            task.rok;
+
+
+        taskList.innerHTML = "";
+
+        taskList.appendChild(editBox);
+    }
+
+
+    // ======================================
+    // ЗАЧУВАЈ ИЗМЕНИ
+    // ======================================
+
+    async function saveEdit(id) {
+
+        const grade =
+            document.getElementById("editGrade").value;
+
+        const subject =
+            document.getElementById("editSubject").value;
+
+        const title =
+            document.getElementById("editTitle").value.trim();
+
+        const description =
+            document.getElementById("editDescription").value.trim();
+
+        const date =
+            document.getElementById("editDate").value;
+
+        const deadline =
+            document.getElementById("editDeadline").value;
+
+
+        if (!title || !description || !date || !deadline) {
+
+            alert("⚠️ Пополнете ги сите полиња.");
+
+            return;
+        }
+
+
+        const { error } =
+            await supabaseClient
+                .from("domasni_zadaci")
+                .update({
+                    naslov: title,
+                    opis: description,
+                    predmet: subject,
+                    oddelenie: grade,
+                    datum: date,
+                    rok: deadline
+                })
+                .eq("id", id);
+
+
+        if (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ Не успеа изменувањето на задачата."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ Задачата е успешно изменета!"
+        );
+
+
+        loadTasks();
+    }
+
+
+    // ======================================
+    // БРИШЕЊЕ
+    // ======================================
+
+    async function deleteTask(id) {
+
+        const confirmed =
+            confirm(
+                "Дали навистина сакате да ја избришете оваа домашна задача?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        const { error } =
+            await supabaseClient
+                .from("domasni_zadaci")
+                .delete()
+                .eq("id", id);
+
+
+        if (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ Не успеа бришењето на задачата."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "🗑️ Задачата е избришана."
+        );
+
+
+        loadTasks();
     }
 
 </script>
