@@ -744,119 +744,158 @@
 
     async function loadMaterials() {
 
-        const list =
-            document.getElementById("materialsList");
+    const list =
+        document.getElementById("materialsList");
 
 
-        const { data, error } =
-            await supabaseClient
-                .from("materijali")
-                .select("*")
-                .order("datum", {
-                    ascending: false
-                });
+    const { data, error } =
+        await supabaseClient
+            .from("materijali")
+            .select("*")
+            .order("datum", {
+                ascending: false
+            });
 
 
-        if (error) {
+    if (error) {
 
-            console.error(error);
+        console.error(error);
 
-            list.innerHTML =
-                "<p>❌ Не може да се вчитаат материјалите.</p>";
+        list.innerHTML =
+            "<p>❌ Не може да се вчитаат материјалите.</p>";
 
-            return;
-        }
-
-
-        if (!data || data.length === 0) {
-
-            list.innerHTML =
-                "<p>Нема додадени материјали.</p>";
-
-            return;
-        }
-
-
-        list.innerHTML = "";
-
-
-        data.forEach(material => {
-
-            const div =
-                document.createElement("div");
-
-
-            div.style.border =
-                "1px solid #ddd";
-
-            div.style.padding =
-                "15px";
-
-            div.style.marginBottom =
-                "10px";
-
-            div.style.borderRadius =
-                "8px";
-
-
-            const title =
-                document.createElement("strong");
-
-            title.textContent =
-                material.naslov;
-
-
-            const info =
-                document.createElement("p");
-
-            info.textContent =
-                material.oddelenie +
-                " – " +
-                material.predmet;
-
-
-            const description =
-                document.createElement("p");
-
-            description.textContent =
-                material.opis || "";
-
-
-            const type =
-                document.createElement("small");
-
-            type.textContent =
-                material.tip;
-
-
-            const link =
-                document.createElement("a");
-
-            link.href =
-                material.url;
-
-            link.target =
-                "_blank";
-
-            link.rel =
-                "noopener noreferrer";
-
-            link.textContent =
-                "🔗 Отвори материјал";
-
-
-            div.appendChild(title);
-            div.appendChild(info);
-            div.appendChild(description);
-            div.appendChild(type);
-            div.appendChild(document.createElement("br"));
-            div.appendChild(document.createElement("br"));
-            div.appendChild(link);
-
-
-            list.appendChild(div);
-        });
+        return;
     }
+
+
+    if (!data || data.length === 0) {
+
+        list.innerHTML =
+            "<p>Нема додадени материјали.</p>";
+
+        return;
+    }
+
+
+    list.innerHTML = "";
+
+
+    data.forEach(material => {
+
+        const div =
+            document.createElement("div");
+
+
+        div.style.border =
+            "1px solid #ddd";
+
+        div.style.padding =
+            "15px";
+
+        div.style.marginBottom =
+            "10px";
+
+        div.style.borderRadius =
+            "8px";
+
+
+        const title =
+            document.createElement("strong");
+
+        title.textContent =
+            material.naslov;
+
+
+        const info =
+            document.createElement("p");
+
+        info.textContent =
+            material.oddelenie +
+            " – " +
+            material.predmet;
+
+
+        const description =
+            document.createElement("p");
+
+        description.textContent =
+            material.opis || "";
+
+
+        const type =
+            document.createElement("small");
+
+        type.textContent =
+            material.tip;
+
+
+        const link =
+            document.createElement("a");
+
+        link.href =
+            material.url;
+
+        link.target =
+            "_blank";
+
+        link.rel =
+            "noopener noreferrer";
+
+        link.textContent =
+            "🔗 Отвори материјал";
+
+
+        // ==========================================
+        // КОПЧЕ ЗА БРИШЕЊЕ
+        // ==========================================
+
+        const deleteButton =
+            document.createElement("button");
+
+        deleteButton.textContent =
+            "🗑️ Избриши";
+
+        deleteButton.style.marginLeft =
+            "10px";
+
+        deleteButton.style.padding =
+            "8px 12px";
+
+        deleteButton.style.background =
+            "#dc2626";
+
+        deleteButton.style.color =
+            "white";
+
+        deleteButton.style.border =
+            "none";
+
+        deleteButton.style.borderRadius =
+            "6px";
+
+        deleteButton.style.cursor =
+            "pointer";
+
+
+        deleteButton.onclick =
+            () => deleteMaterial(material);
+
+
+        div.appendChild(title);
+        div.appendChild(info);
+        div.appendChild(description);
+        div.appendChild(type);
+
+        div.appendChild(document.createElement("br"));
+        div.appendChild(document.createElement("br"));
+
+        div.appendChild(link);
+        div.appendChild(deleteButton);
+
+
+        list.appendChild(div);
+    });
+}
 
 
     // ======================================
