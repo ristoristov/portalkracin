@@ -897,7 +897,119 @@
     });
 }
 
+async function deleteMaterial(material) {
 
+    const confirmDelete =
+        confirm(
+            "Дали навистина сакаш да го избришеш материјалот:\n\n" +
+            material.naslov + "?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    // ==========================================
+    // БРИШЕЊЕ НА ДАТОТЕКАТА ОД STORAGE
+    // ==========================================
+
+    if (
+        material.url &&
+        material.url.includes("/storage/v1/object/")
+    ) {
+
+        try {
+
+            const url =
+                new URL(material.url);
+
+            const marker =
+                "/storage/v1/object/";
+
+            const markerIndex =
+                url.pathname.indexOf(marker);
+
+
+            if (markerIndex !== -1) {
+
+                let filePath =
+                    url.pathname.substring(
+                        markerIndex + marker.length
+                    );
+
+
+                filePath =
+                    filePath.replace(
+                        /^sign\/nastavni-materijali\//,
+                        ""
+                    );
+
+                filePath =
+                    filePath.replace(
+                        /^public\/nastavni-materijali\//,
+                        ""
+                    );
+
+
+                if (filePath) {
+
+                    const { error: storageError } =
+                        await supabaseClient
+                            .storage
+                            .from("nastavni-materijali")
+                            .remove([filePath]);
+
+
+                    if (storageError) {
+
+                        console.error(storageError);
+
+                    }
+                }
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Грешка при обработка на URL:",
+                error
+            );
+        }
+    }
+
+
+    // ==========================================
+    // БРИШЕЊЕ ОД ТАБЕЛАТА
+    // ==========================================
+
+    const { error } =
+        await supabaseClient
+            .from("materijali")
+            .delete()
+            .eq("id", material.id);
+
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Материјалот не може да се избрише."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "✅ Материјалот е успешно избришан."
+    );
+
+
+    loadMaterials();
+}
     // ======================================
     // ПРИКАЖУВАЊЕ НА ДОМАШНИ ЗАДАЧИ
     // ======================================
