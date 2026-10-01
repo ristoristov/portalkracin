@@ -129,7 +129,17 @@
             Избери одделение и предмет за да ги видиш домашните задачи.
         </div>
     </div>
+<hr style="margin: 40px 0;">
 
+<h2 style="color:#1e3a8a;">
+    📚 Наставни материјали
+</h2>
+
+<div id="materials">
+    <div class="message">
+        Избери одделение и предмет за да ги видиш наставните материјали.
+    </div>
+</div>
 </div>
 
 <script>
@@ -276,18 +286,166 @@
 
     }
 
+// ==========================================
+// ПРИКАЖУВАЊЕ НА НАСТАВНИ МАТЕРИЈАЛИ
+// ==========================================
 
+async function loadMaterials() {
+
+    const grade =
+        document.getElementById("grade").value;
+
+    const subject =
+        document.getElementById("subject").value;
+
+    const materialsContainer =
+        document.getElementById("materials");
+
+
+    // Ако нема избрано одделение или предмет
+    if (!grade || !subject) {
+
+        materialsContainer.innerHTML = `
+            <div class="message">
+                Избери одделение и предмет за да ги видиш наставните материјали.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Порака додека се вчитуваат материјалите
+    materialsContainer.innerHTML = `
+        <div class="message">
+            Ги вчитувам наставните материјали...
+        </div>
+    `;
+
+
+    // Барање до Supabase
+    const { data, error } =
+        await supabaseClient
+            .from("materijali")
+            .select("*")
+            .eq("oddelenie", grade)
+            .eq("predmet", subject)
+            .order("datum", { ascending: false });
+
+
+    // Ако има грешка
+    if (error) {
+
+        console.error(error);
+
+        materialsContainer.innerHTML = `
+            <div class="message error">
+                Настана грешка при вчитувањето на наставните материјали.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Ако нема материјали
+    if (!data || data.length === 0) {
+
+        materialsContainer.innerHTML = `
+            <div class="message">
+                📭 Во моментов нема внесени наставни материјали
+                за избраниот предмет и одделение.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // Прикажување
+    materialsContainer.innerHTML = "";
+
+
+    data.forEach(material => {
+
+        const materialElement =
+            document.createElement("div");
+
+        materialElement.className = "task";
+
+
+        const title =
+            document.createElement("h2");
+
+        title.textContent =
+            material.naslov || "Наставен материјал";
+
+
+        const description =
+            document.createElement("p");
+
+        description.textContent =
+            material.opis || "";
+
+
+        const type =
+            document.createElement("p");
+
+        type.textContent =
+            "📌 Тип: " + (material.tip || "Материјал");
+
+
+        const link =
+            document.createElement("a");
+
+        link.href =
+            material.url;
+
+        link.target =
+            "_blank";
+
+        link.rel =
+            "noopener noreferrer";
+
+        link.textContent =
+            "🔗 Отвори материјал";
+
+        link.style.display = "inline-block";
+        link.style.marginTop = "10px";
+        link.style.fontWeight = "bold";
+
+
+        materialElement.appendChild(title);
+
+        if (material.opis) {
+            materialElement.appendChild(description);
+        }
+
+        materialElement.appendChild(type);
+        materialElement.appendChild(link);
+
+        materialsContainer.appendChild(materialElement);
+
+    });
+
+}
     // ==========================================
     // КОГА ЌЕ СЕ ПРОМЕНИ ОДДЕЛЕНИЕТО ИЛИ ПРЕДМЕТОТ
     // ==========================================
 
     document
-        .getElementById("grade")
-        .addEventListener("change", loadTasks);
+    .getElementById("grade")
+    .addEventListener("change", function() {
+        loadTasks();
+        loadMaterials();
+    });
 
-    document
-        .getElementById("subject")
-        .addEventListener("change", loadTasks);
+document
+    .getElementById("subject")
+    .addEventListener("change", function() {
+        loadTasks();
+        loadMaterials();
+    });
 
 </script>
 
