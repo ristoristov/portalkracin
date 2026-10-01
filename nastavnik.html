@@ -369,6 +369,8 @@
 
 <script>
 
+    <script>
+
     // ======================================
     // SUPABASE
     // ======================================
@@ -376,6 +378,8 @@
     const SUPABASE_URL =
         "https://mxwunraqqhqmrxhjatvi.supabase.co";
 
+    // ОВДЕ ОСТАВИ ЈА ТВОЈАТА ПОСТОЕЧКА
+    // SUPABASE PUBLISHABLE KEY
     const SUPABASE_KEY =
         "sb_publishable_YDzpfdflmhyFdaeryqZe2g_SRdOnyam";
 
@@ -384,81 +388,101 @@
             SUPABASE_URL,
             SUPABASE_KEY
         );
-async function checkTeacherRole() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
 
-    if (!user) {
-        return false;
+
+    // ======================================
+    // ПРОВЕРКА НА НАСТАВНИЧКА УЛОГА
+    // ======================================
+
+    async function checkTeacherRole() {
+
+        const {
+            data: { user }
+        } = await supabaseClient.auth.getUser();
+
+        if (!user) {
+            return false;
+        }
+
+        const { data, error } =
+            await supabaseClient
+                .from("profiles")
+                .select("role")
+                .eq("id", user.id)
+                .single();
+
+        if (error || !data || data.role !== "teacher") {
+            return false;
+        }
+
+        return true;
     }
 
-    const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
 
-    if (error || !data || data.role !== "teacher") {
-        return false;
-    }
-
-    return true;
-}
-async function checkTeacherRole() {
-
-    const {
-        data: { user }
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) {
-        return false;
-    }
-
-    const { data, error } =
-        await supabaseClient
-            .from("profiles")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-
-    if (error || !data || data.role !== "teacher") {
-        return false;
-    }
-
-    return true;
-}
     // ======================================
     // НАЈАВА
     // ======================================
 
     async function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const message = document.getElementById("loginMessage");
 
-    const { error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
+        const email =
+            document.getElementById("email").value;
 
-    if (error) {
-        message.textContent = "❌ Погрешен е-mail или лозинка.";
-        return;
+        const password =
+            document.getElementById("password").value;
+
+        const message =
+            document.getElementById("loginMessage");
+
+
+        const { error } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+
+        if (error) {
+
+            message.classList.remove("hidden");
+
+            message.textContent =
+                "❌ Погрешен e-mail или лозинка.";
+
+            return;
+        }
+
+
+        const isTeacher =
+            await checkTeacherRole();
+
+
+        if (!isTeacher) {
+
+            await supabaseClient.auth.signOut();
+
+            message.classList.remove("hidden");
+
+            message.textContent =
+                "❌ Оваа сметка нема наставничка дозвола.";
+
+            return;
+        }
+
+
+        document
+            .getElementById("loginBox")
+            .classList.add("hidden");
+
+
+        document
+            .getElementById("teacherPanel")
+            .classList.remove("hidden");
+
+
+        loadTasks();
+        loadMaterials();
     }
-
-    const isTeacher = await checkTeacherRole();
-
-    if (!isTeacher) {
-        await supabaseClient.auth.signOut();
-        message.textContent = "❌ Оваа сметка нема наставничка дозвола.";
-        return;
-    }
-
-    document.getElementById("loginSection").style.display = "none";
-    document.getElementById("teacherPanel").style.display = "block";
-
-    loadTasks();
-    loadMaterials();
-}
 
 
     // ======================================
@@ -469,9 +493,11 @@ async function checkTeacherRole() {
 
         await supabaseClient.auth.signOut();
 
+
         document
             .getElementById("teacherPanel")
             .classList.add("hidden");
+
 
         document
             .getElementById("loginBox")
@@ -480,7 +506,7 @@ async function checkTeacherRole() {
 
 
     // ======================================
-    // ДОДАВАЊЕ ЗАДАЧА
+    // ДОДАВАЊЕ ДОМАШНА ЗАДАЧА
     // ======================================
 
     async function addTask() {
@@ -517,87 +543,7 @@ async function checkTeacherRole() {
             return;
         }
 
-async function addMaterial() {
-    const oddelenie = document.getElementById("materialOddelenie").value;
-    const predmet = document.getElementById("materialPredmet").value;
-    const naslov = document.getElementById("materialNaslov").value.trim();
-    const opis = document.getElementById("materialOpis").value.trim();
-    const tip = document.getElementById("materialTip").value;
-    const url = document.getElementById("materialUrl").value.trim();
-    const message = document.getElementById("materialMessage");
 
-    if (!naslov || !url) {
-        message.textContent = "❌ Внеси наслов и линк до материјалот.";
-        return;
-    }
-
-    const { error } = await supabaseClient
-        .from("materijali")
-        .insert([{
-            naslov: naslov,
-            opis: opis,
-            predmet: predmet,
-            oddelenie: oddelenie,
-            tip: tip,
-            url: url
-        }]);
-
-    if (error) {
-        console.error(error);
-        message.textContent = "❌ Грешка при додавање на материјал.";
-        return;
-    }
-
-    message.textContent = "✅ Материјалот е успешно додаден.";
-
-    document.getElementById("materialNaslov").value = "";
-    document.getElementById("materialOpis").value = "";
-    document.getElementById("materialUrl").value = "";
-
-    loadMaterials();
-}
-        async function loadMaterials() {
-    const list = document.getElementById("materialsList");
-
-    const { data, error } = await supabaseClient
-        .from("materijali")
-        .select("*")
-        .order("datum", { ascending: false });
-
-    if (error) {
-        console.error(error);
-        list.innerHTML = "<p>❌ Не може да се вчитаат материјалите.</p>";
-        return;
-    }
-
-    if (!data || data.length === 0) {
-        list.innerHTML = "<p>Нема додадени материјали.</p>";
-        return;
-    }
-
-    list.innerHTML = "";
-
-    data.forEach(material => {
-        const div = document.createElement("div");
-
-        div.style.border = "1px solid #ddd";
-        div.style.padding = "15px";
-        div.style.marginBottom = "10px";
-        div.style.borderRadius = "8px";
-
-        div.innerHTML = `
-            <strong>${material.naslov}</strong><br>
-            ${material.oddelenie} – ${material.predmet}<br>
-            ${material.opis || ""}<br>
-            <small>${material.tip}</small><br><br>
-            <a href="${material.url}" target="_blank">
-                🔗 Отвори материјал
-            </a>
-        `;
-
-        list.appendChild(div);
-    });
-}
         const { error } =
             await supabaseClient
                 .from("domasni_zadaci")
@@ -641,7 +587,202 @@ async function addMaterial() {
 
 
     // ======================================
-    // ПРИКАЖУВАЊЕ НА ЗАДАЧИ
+    // ДОДАВАЊЕ НАСТАВЕН МАТЕРИЈАЛ
+    // ======================================
+
+    async function addMaterial() {
+
+        const oddelenie =
+            document.getElementById("materialOddelenie").value;
+
+        const predmet =
+            document.getElementById("materialPredmet").value;
+
+        const naslov =
+            document.getElementById("materialNaslov").value.trim();
+
+        const opis =
+            document.getElementById("materialOpis").value.trim();
+
+        const tip =
+            document.getElementById("materialTip").value;
+
+        const url =
+            document.getElementById("materialUrl").value.trim();
+
+        const message =
+            document.getElementById("materialMessage");
+
+
+        if (!naslov || !url) {
+
+            message.textContent =
+                "❌ Внеси наслов и линк до материјалот.";
+
+            return;
+        }
+
+
+        const { error } =
+            await supabaseClient
+                .from("materijali")
+                .insert([{
+                    naslov: naslov,
+                    opis: opis,
+                    predmet: predmet,
+                    oddelenie: oddelenie,
+                    tip: tip,
+                    url: url
+                }]);
+
+
+        if (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ Грешка при додавање на материјал.";
+
+            return;
+        }
+
+
+        message.textContent =
+            "✅ Материјалот е успешно додаден.";
+
+
+        document.getElementById("materialNaslov").value = "";
+        document.getElementById("materialOpis").value = "";
+        document.getElementById("materialUrl").value = "";
+
+
+        loadMaterials();
+    }
+
+
+    // ======================================
+    // ПРИКАЖУВАЊЕ НА МАТЕРИЈАЛИ
+    // ======================================
+
+    async function loadMaterials() {
+
+        const list =
+            document.getElementById("materialsList");
+
+
+        const { data, error } =
+            await supabaseClient
+                .from("materijali")
+                .select("*")
+                .order("datum", {
+                    ascending: false
+                });
+
+
+        if (error) {
+
+            console.error(error);
+
+            list.innerHTML =
+                "<p>❌ Не може да се вчитаат материјалите.</p>";
+
+            return;
+        }
+
+
+        if (!data || data.length === 0) {
+
+            list.innerHTML =
+                "<p>Нема додадени материјали.</p>";
+
+            return;
+        }
+
+
+        list.innerHTML = "";
+
+
+        data.forEach(material => {
+
+            const div =
+                document.createElement("div");
+
+
+            div.style.border =
+                "1px solid #ddd";
+
+            div.style.padding =
+                "15px";
+
+            div.style.marginBottom =
+                "10px";
+
+            div.style.borderRadius =
+                "8px";
+
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent =
+                material.naslov;
+
+
+            const info =
+                document.createElement("p");
+
+            info.textContent =
+                material.oddelenie +
+                " – " +
+                material.predmet;
+
+
+            const description =
+                document.createElement("p");
+
+            description.textContent =
+                material.opis || "";
+
+
+            const type =
+                document.createElement("small");
+
+            type.textContent =
+                material.tip;
+
+
+            const link =
+                document.createElement("a");
+
+            link.href =
+                material.url;
+
+            link.target =
+                "_blank";
+
+            link.rel =
+                "noopener noreferrer";
+
+            link.textContent =
+                "🔗 Отвори материјал";
+
+
+            div.appendChild(title);
+            div.appendChild(info);
+            div.appendChild(description);
+            div.appendChild(type);
+            div.appendChild(document.createElement("br"));
+            div.appendChild(document.createElement("br"));
+            div.appendChild(link);
+
+
+            list.appendChild(div);
+        });
+    }
+
+
+    // ======================================
+    // ПРИКАЖУВАЊЕ НА ДОМАШНИ ЗАДАЧИ
     // ======================================
 
     async function loadTasks() {
@@ -687,7 +828,8 @@ async function addMaterial() {
             const div =
                 document.createElement("div");
 
-            div.className = "task";
+            div.className =
+                "task";
 
 
             const title =
@@ -707,7 +849,8 @@ async function addMaterial() {
             const info =
                 document.createElement("p");
 
-            info.className = "task-info";
+            info.className =
+                "task-info";
 
             info.textContent =
                 "📚 " +
@@ -727,8 +870,6 @@ async function addMaterial() {
                 "task-buttons";
 
 
-            // КОПЧЕ ИЗМЕНИ
-
             const editButton =
                 document.createElement("button");
 
@@ -743,8 +884,6 @@ async function addMaterial() {
                     showEditForm(task);
                 };
 
-
-            // КОПЧЕ ИЗБРИШИ
 
             const deleteButton =
                 document.createElement("button");
@@ -772,9 +911,7 @@ async function addMaterial() {
 
 
             taskList.appendChild(div);
-
         });
-
     }
 
 
@@ -802,34 +939,22 @@ async function addMaterial() {
             <label>Одделение</label>
 
             <select id="editGrade">
-
                 <option value="VI">VI одделение</option>
-
                 <option value="VII">VII одделение</option>
-
                 <option value="VIII">VIII одделение</option>
-
                 <option value="IX">IX одделение</option>
-
             </select>
-
 
             <label>Предмет</label>
 
             <select id="editSubject">
-
                 <option value="Математика">Математика</option>
-
                 <option value="Информатика">Информатика</option>
-
                 <option value="Физика">Физика</option>
-
                 <option value="Техничко образование">
                     Техничко образование
                 </option>
-
             </select>
-
 
             <label>Наслов</label>
 
@@ -838,13 +963,11 @@ async function addMaterial() {
                 id="editTitle"
             >
 
-
             <label>Опис</label>
 
             <textarea
                 id="editDescription"
             ></textarea>
-
 
             <label>Датум</label>
 
@@ -853,14 +976,12 @@ async function addMaterial() {
                 id="editDate"
             >
 
-
             <label>Рок</label>
 
             <input
                 type="date"
                 id="editDeadline"
             >
-
 
             <button
                 class="save-button"
@@ -972,7 +1093,7 @@ async function addMaterial() {
 
 
     // ======================================
-    // БРИШЕЊЕ
+    // БРИШЕЊЕ ДОМАШНА ЗАДАЧА
     // ======================================
 
     async function deleteTask(id) {
@@ -1014,28 +1135,57 @@ async function addMaterial() {
 
         loadTasks();
     }
-async function checkExistingSession() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
 
-    if (!session) {
-        return;
+
+    // ======================================
+    // ПРОВЕРКА НА ПОСТОЕЧКА СЕСИЈА
+    // ======================================
+
+    async function checkExistingSession() {
+
+        const {
+            data: { session }
+        } = await supabaseClient.auth.getSession();
+
+
+        if (!session) {
+            return;
+        }
+
+
+        const isTeacher =
+            await checkTeacherRole();
+
+
+        if (isTeacher) {
+
+            document
+                .getElementById("loginBox")
+                .classList.add("hidden");
+
+
+            document
+                .getElementById("teacherPanel")
+                .classList.remove("hidden");
+
+
+            loadTasks();
+            loadMaterials();
+
+        } else {
+
+            await supabaseClient.auth.signOut();
+        }
     }
 
-    const isTeacher = await checkTeacherRole();
 
-    if (isTeacher) {
-    document.getElementById("loginSection").style.display = "none";
-    document.getElementById("teacherPanel").style.display = "block";
+    // ======================================
+    // СТАРТ
+    // ======================================
 
-    loadTasks();
-    loadMaterials();
-}
-    } else {
-        await supabaseClient.auth.signOut();
-    }
-}
+    checkExistingSession();
 
-checkExistingSession();
+</script>
 </script>
 
 </body>
