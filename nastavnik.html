@@ -324,55 +324,80 @@
             SUPABASE_URL,
             SUPABASE_KEY
         );
+async function checkTeacherRole() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
 
+    if (!user) {
+        return false;
+    }
 
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+    if (error || !data || data.role !== "teacher") {
+        return false;
+    }
+
+    return true;
+}
+async function checkTeacherRole() {
+
+    const {
+        data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+        return false;
+    }
+
+    const { data, error } =
+        await supabaseClient
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+    if (error || !data || data.role !== "teacher") {
+        return false;
+    }
+
+    return true;
+}
     // ======================================
     // НАЈАВА
     // ======================================
 
     async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const message = document.getElementById("loginMessage");
 
-        const email =
-            document.getElementById("email").value.trim();
+    const { error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
 
-        const password =
-            document.getElementById("password").value;
-
-        const message =
-            document.getElementById("loginMessage");
-
-
-        const { error } =
-            await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-
-        if (error) {
-
-            message.classList.remove("hidden");
-
-            message.textContent =
-                "❌ Најавувањето не успеа. Проверете ги e-mail адресата и лозинката.";
-
-            return;
-        }
-
-
-        message.classList.add("hidden");
-
-        document
-            .getElementById("loginBox")
-            .classList.add("hidden");
-
-        document
-            .getElementById("teacherPanel")
-            .classList.remove("hidden");
-
-
-        loadTasks();
+    if (error) {
+        message.textContent = "❌ Погрешен е-mail или лозинка.";
+        return;
     }
+
+    const isTeacher = await checkTeacherRole();
+
+    if (!isTeacher) {
+        await supabaseClient.auth.signOut();
+        message.textContent = "❌ Оваа сметка нема наставничка дозвола.";
+        return;
+    }
+
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("teacherPanel").style.display = "block";
+
+    loadTasks();
+}
 
 
     // ======================================
@@ -848,7 +873,26 @@
 
         loadTasks();
     }
+async function checkExistingSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
 
+    if (!session) {
+        return;
+    }
+
+    const isTeacher = await checkTeacherRole();
+
+    if (isTeacher) {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("teacherPanel").style.display = "block";
+
+        loadTasks();
+    } else {
+        await supabaseClient.auth.signOut();
+    }
+}
+
+checkExistingSession();
 </script>
 
 </body>
