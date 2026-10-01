@@ -4,70 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Домашни задачи</title>
+    <title>Домашни задачи | Училишен портал</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f7fb;
             margin: 0;
-            color: #1f2937;
+            padding: 0;
         }
 
         header {
             background: #1e3a8a;
             color: white;
-            text-align: center;
             padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
         }
 
         .container {
-            max-width: 1000px;
-            margin: 40px auto;
+            max-width: 900px;
+            margin: 30px auto;
             padding: 20px;
         }
 
-        .selection {
+        .filters {
             background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
         select {
+            width: 100%;
             padding: 12px;
-            margin: 10px;
-            border-radius: 8px;
+            margin-bottom: 18px;
             border: 1px solid #ccc;
+            border-radius: 8px;
             font-size: 16px;
         }
 
         .task {
             background: white;
             padding: 20px;
-            margin-bottom: 15px;
             border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        .task h3 {
+        .task h2 {
             color: #1e3a8a;
+            margin-top: 0;
+        }
+
+        .task p {
+            line-height: 1.6;
         }
 
         .date {
             color: #555;
-            margin-top: 10px;
+            font-size: 14px;
         }
 
-        .back {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            background: #2563eb;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
+        .message {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .error {
+            color: #b91c1c;
         }
     </style>
 </head>
@@ -75,76 +94,202 @@
 <body>
 
 <header>
-    <h1>📝 Домашни задачи</h1>
-    <p>Изберете одделение и предмет</p>
+    <h1>📚 Домашни задачи</h1>
+    <p>Училишен портал</p>
 </header>
 
 <div class="container">
 
-    <div class="selection">
+    <div class="filters">
 
-        <label>
-            Одделение:
-            <select id="grade">
-                <option value="">-- Избери --</option>
-                <option value="VI">VI одделение</option>
-                <option value="VII">VII одделение</option>
-                <option value="VIII">VIII одделение</option>
-                <option value="IX">IX одделение</option>
-            </select>
-        </label>
+        <label for="grade">Одделение:</label>
 
-        <label>
-            Предмет:
-            <select id="subject">
-                <option value="">-- Избери --</option>
-                <option value="matematika">Математика</option>
-                <option value="informatika">Информатика</option>
-                <option value="fizika">Физика</option>
-                <option value="tehnicko">Техничко образование</option>
-            </select>
-        </label>
+        <select id="grade">
+            <option value="">-- Избери одделение --</option>
+            <option value="VI">VI одделение</option>
+            <option value="VII">VII одделение</option>
+            <option value="VIII">VIII одделение</option>
+            <option value="IX">IX одделение</option>
+        </select>
+
+        <label for="subject">Предмет:</label>
+
+        <select id="subject">
+            <option value="">-- Избери предмет --</option>
+            <option value="Математика">Математика</option>
+            <option value="Информатика">Информатика</option>
+            <option value="Физика">Физика</option>
+            <option value="Техничко образование">Техничко образование</option>
+        </select>
 
     </div>
 
     <div id="tasks">
-
-        <div class="task">
-            <h3>📝 Линеарни равенки</h3>
-
-            <p>
-                Решете ги задачите 1–10 од учебникот.
-            </p>
-
-            <div class="date">
-                📅 Дадено: 30.09.2026
-                <br>
-                ⏰ Рок: 02.10.2026
-            </div>
+        <div class="message">
+            Избери одделение и предмет за да ги видиш домашните задачи.
         </div>
-
-        <div class="task">
-            <h3>💻 Повторување на информатика</h3>
-
-            <p>
-                Повторете ја лекцијата за основните поими
-                од информатиката.
-            </p>
-
-            <div class="date">
-                📅 Дадено: 30.09.2026
-                <br>
-                ⏰ Рок: 03.10.2026
-            </div>
-        </div>
-
     </div>
 
-    <a class="back" href="index.html">
-        ← Назад кон почетната страница
-    </a>
-
 </div>
+
+<script>
+
+    // ==========================================
+    // SUPABASE ПОДАТОЦИ
+    // ==========================================
+
+    const SUPABASE_URL =
+        "https://mxwunraqqhqmrxhjatvi.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_YDzpfdflmhyFdaeryqZe2g_SRdOnyam";
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    // ==========================================
+    // ПРИКАЖУВАЊЕ НА ДОМАШНИ ЗАДАЧИ
+    // ==========================================
+
+    async function loadTasks() {
+
+        const grade =
+            document.getElementById("grade").value;
+
+        const subject =
+            document.getElementById("subject").value;
+
+        const tasksContainer =
+            document.getElementById("tasks");
+
+
+        // Ако нема избрано ништо
+        if (!grade || !subject) {
+
+            tasksContainer.innerHTML = `
+                <div class="message">
+                    Избери одделение и предмет за да ги видиш домашните задачи.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // Прикажи порака додека се вчитува
+        tasksContainer.innerHTML = `
+            <div class="message">
+                Ги вчитувам домашните задачи...
+            </div>
+        `;
+
+
+        // Барање до Supabase
+        const { data, error } = await supabaseClient
+            .from("domasni_zadaci")
+            .select("*")
+            .eq("oddelenie", grade)
+            .eq("predmet", subject)
+            .order("rok", { ascending: true });
+
+
+        // Ако има грешка
+        if (error) {
+
+            console.error(error);
+
+            tasksContainer.innerHTML = `
+                <div class="message error">
+                    Настана грешка при вчитувањето на домашните задачи.
+                    <br><br>
+                    Провери ја Supabase дозволата за читање.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // Ако нема задачи
+        if (!data || data.length === 0) {
+
+            tasksContainer.innerHTML = `
+                <div class="message">
+                    📭 Во моментов нема внесени домашни задачи
+                    за избраниот предмет и одделение.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // Прикажување на задачите
+        tasksContainer.innerHTML = "";
+
+
+        data.forEach(task => {
+
+            const taskElement =
+                document.createElement("div");
+
+            taskElement.className = "task";
+
+
+            const title =
+                document.createElement("h2");
+
+            title.textContent =
+                task.naslov || "Домашна задача";
+
+
+            const description =
+                document.createElement("p");
+
+            description.textContent =
+                task.opis || "";
+
+
+            const dates =
+                document.createElement("div");
+
+            dates.className = "date";
+
+            dates.textContent =
+                "📅 Датум: " +
+                (task.datum || "-") +
+                "   |   ⏰ Рок: " +
+                (task.rok || "-");
+
+
+            taskElement.appendChild(title);
+            taskElement.appendChild(description);
+            taskElement.appendChild(dates);
+
+            tasksContainer.appendChild(taskElement);
+
+        });
+
+    }
+
+
+    // ==========================================
+    // КОГА ЌЕ СЕ ПРОМЕНИ ОДДЕЛЕНИЕТО ИЛИ ПРЕДМЕТОТ
+    // ==========================================
+
+    document
+        .getElementById("grade")
+        .addEventListener("change", loadTasks);
+
+    document
+        .getElementById("subject")
+        .addEventListener("change", loadTasks);
+
+</script>
 
 </body>
 </html>
