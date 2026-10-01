@@ -555,6 +555,48 @@ async function addMaterial() {
 
     loadMaterials();
 }
+        async function loadMaterials() {
+    const list = document.getElementById("materialsList");
+
+    const { data, error } = await supabaseClient
+        .from("materijali")
+        .select("*")
+        .order("datum", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        list.innerHTML = "<p>❌ Не може да се вчитаат материјалите.</p>";
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        list.innerHTML = "<p>Нема додадени материјали.</p>";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    data.forEach(material => {
+        const div = document.createElement("div");
+
+        div.style.border = "1px solid #ddd";
+        div.style.padding = "15px";
+        div.style.marginBottom = "10px";
+        div.style.borderRadius = "8px";
+
+        div.innerHTML = `
+            <strong>${material.naslov}</strong><br>
+            ${material.oddelenie} – ${material.predmet}<br>
+            ${material.opis || ""}<br>
+            <small>${material.tip}</small><br><br>
+            <a href="${material.url}" target="_blank">
+                🔗 Отвори материјал
+            </a>
+        `;
+
+        list.appendChild(div);
+    });
+}
         const { error } =
             await supabaseClient
                 .from("domasni_zadaci")
