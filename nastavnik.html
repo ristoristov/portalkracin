@@ -317,6 +317,8 @@
     <label>Линк до материјалот:</label>
     <input type="url" id="materialUrl"
            placeholder="https://...">
+    <label>Или прикачи датотека:</label>
+<input type="file" id="materialFile">
 </div>
 
 <button onclick="addMaterial()">
@@ -590,72 +592,150 @@
 
     async function addMaterial() {
 
-        const oddelenie =
-            document.getElementById("materialOddelenie").value;
+    const oddelenie =
+        document.getElementById("materialOddelenie").value;
 
-        const predmet =
-            document.getElementById("materialPredmet").value;
+    const predmet =
+        document.getElementById("materialPredmet").value;
 
-        const naslov =
-            document.getElementById("materialNaslov").value.trim();
+    const naslov =
+        document.getElementById("materialNaslov").value.trim();
 
-        const opis =
-            document.getElementById("materialOpis").value.trim();
+    const opis =
+        document.getElementById("materialOpis").value.trim();
 
-        const tip =
-            document.getElementById("materialTip").value;
+    const tip =
+        document.getElementById("materialTip").value;
 
-        const url =
-            document.getElementById("materialUrl").value.trim();
+    const urlInput =
+        document.getElementById("materialUrl");
 
-        const message =
-            document.getElementById("materialMessage");
+    const fileInput =
+        document.getElementById("materialFile");
 
-
-        if (!naslov || !url) {
-
-            message.textContent =
-                "❌ Внеси наслов и линк до материјалот.";
-
-            return;
-        }
+    const message =
+        document.getElementById("materialMessage");
 
 
-        const { error } =
-            await supabaseClient
-                .from("materijali")
-                .insert([{
-                    naslov: naslov,
-                    opis: opis,
-                    predmet: predmet,
-                    oddelenie: oddelenie,
-                    tip: tip,
-                    url: url
-                }]);
+    const file =
+        fileInput.files[0];
 
 
-        if (error) {
-
-            console.error(error);
-
-            message.textContent =
-                "❌ Грешка при додавање на материјал.";
-
-            return;
-        }
-
+    // Мора да има или линк или датотека
+    if (!naslov || (!urlInput.value.trim() && !file)) {
 
         message.textContent =
-            "✅ Материјалот е успешно додаден.";
+            "❌ Внеси наслов и линк или прикачи датотека.";
 
-
-        document.getElementById("materialNaslov").value = "";
-        document.getElementById("materialOpis").value = "";
-        document.getElementById("materialUrl").value = "";
-
-
-        loadMaterials();
+        return;
     }
+
+
+    message.textContent =
+        "⏳ Материјалот се додава...";
+
+
+    let finalUrl =
+        urlInput.value.trim();
+
+
+    // ==========================================
+    // АКО Е ИЗБРАНА ДАТОТЕКА
+    // ==========================================
+
+    if (file) {
+
+        const fileName =
+            Date.now() + "_" + file.name;
+
+        const filePath =
+            "materijali/" + fileName;
+
+
+        const { error: uploadError } =
+            await supabaseClient
+                .storage
+                .from("nastavni-materijali")
+                .upload(filePath, file);
+
+
+        if (uploadError) {
+
+            console.error(uploadError);
+
+            message.textContent =
+                "❌ Грешка при прикачување на датотеката.";
+
+            return;
+        }
+
+
+        // Бидејќи bucket-от е Private,
+        // ќе користиме потписан линк
+        const { data: signedData, error: signedError } =
+            await supabaseClient
+                .storage
+                .from("nastavni-materijali")
+                .createSignedUrl(filePath, 60 * 60 * 24 * 30);
+
+
+        if (signedError) {
+
+            console.error(signedError);
+
+            message.textContent =
+                "❌ Датотеката е прикачена, но не можев да креирам линк.";
+
+            return;
+        }
+
+
+        finalUrl =
+            signedData.signedUrl;
+    }
+
+
+    // ==========================================
+    // ЗАПИШУВАЊЕ ВО ТАБЕЛАТА
+    // ==========================================
+
+    const { error } =
+        await supabaseClient
+            .from("materijali")
+            .insert([{
+                naslov: naslov,
+                opis: opis,
+                predmet: predmet,
+                oddelenie: oddelenie,
+                tip: tip,
+                url: finalUrl
+            }]);
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "❌ Грешка при додавање на материјал.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "✅ Материјалот е успешно додаден.";
+
+
+    document.getElementById("materialNaslov").value = "";
+    document.getElementById("materialOpis").value = "";
+    document.getElementById("materialUrl").value = "";
+    document.getElementById("materialFile").value = "";
+
+
+    loadMaterials();
+
+}
 
 
     // ======================================
