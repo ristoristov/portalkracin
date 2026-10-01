@@ -267,7 +267,67 @@
             >
                 ➕ ДОДАЈ ДОМАШНА ЗАДАЧА
             </button>
+<hr>
 
+<h2>📚 Наставни материјали</h2>
+
+<div class="form-group">
+    <label>Одделение:</label>
+    <select id="materialOddelenie">
+        <option value="VI">VI</option>
+        <option value="VII">VII</option>
+        <option value="VIII">VIII</option>
+        <option value="IX">IX</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Предмет:</label>
+    <select id="materialPredmet">
+        <option value="Математика">Математика</option>
+        <option value="Информатика">Информатика</option>
+        <option value="Физика">Физика</option>
+        <option value="Техничко образование">Техничко образование</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Наслов на материјалот:</label>
+    <input type="text" id="materialNaslov"
+           placeholder="Пример: Линеарни равенки">
+</div>
+
+<div class="form-group">
+    <label>Опис:</label>
+    <textarea id="materialOpis"
+              placeholder="Краток опис на материјалот"></textarea>
+</div>
+
+<div class="form-group">
+    <label>Тип на материјал:</label>
+    <select id="materialTip">
+        <option value="Линк">🔗 Линк</option>
+        <option value="Видео">🎥 Видео</option>
+        <option value="Презентација">📊 Презентација</option>
+        <option value="Документ">📄 Документ</option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label>Линк до материјалот:</label>
+    <input type="url" id="materialUrl"
+           placeholder="https://...">
+</div>
+
+<button onclick="addMaterial()">
+    ➕ Додај материјал
+</button>
+
+<p id="materialMessage"></p>
+
+<h3>📋 Додадени материјали</h3>
+
+<div id="materialsList"></div>
             <div
                 id="addMessage"
                 class="message hidden"
