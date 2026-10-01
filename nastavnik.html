@@ -516,7 +516,45 @@ async function checkTeacherRole() {
             return;
         }
 
+async function addMaterial() {
+    const oddelenie = document.getElementById("materialOddelenie").value;
+    const predmet = document.getElementById("materialPredmet").value;
+    const naslov = document.getElementById("materialNaslov").value.trim();
+    const opis = document.getElementById("materialOpis").value.trim();
+    const tip = document.getElementById("materialTip").value;
+    const url = document.getElementById("materialUrl").value.trim();
+    const message = document.getElementById("materialMessage");
 
+    if (!naslov || !url) {
+        message.textContent = "❌ Внеси наслов и линк до материјалот.";
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from("materijali")
+        .insert([{
+            naslov: naslov,
+            opis: opis,
+            predmet: predmet,
+            oddelenie: oddelenie,
+            tip: tip,
+            url: url
+        }]);
+
+    if (error) {
+        console.error(error);
+        message.textContent = "❌ Грешка при додавање на материјал.";
+        return;
+    }
+
+    message.textContent = "✅ Материјалот е успешно додаден.";
+
+    document.getElementById("materialNaslov").value = "";
+    document.getElementById("materialOpis").value = "";
+    document.getElementById("materialUrl").value = "";
+
+    loadMaterials();
+}
         const { error } =
             await supabaseClient
                 .from("domasni_zadaci")
