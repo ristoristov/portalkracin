@@ -63,6 +63,37 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
+        .material {
+    background: #eef5ff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border-left: 5px solid #1e3a8a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.material h2 {
+    color: #1e3a8a;
+    margin-top: 0;
+}
+
+.material p {
+    line-height: 1.6;
+}
+
+.material a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #1e3a8a;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.material a:hover {
+    background: #162d6b;
+}
 
         .task h2 {
             color: #1e3a8a;
@@ -371,7 +402,7 @@ async function loadMaterials() {
         const materialElement =
             document.createElement("div");
 
-        materialElement.className = "task";
+        materialElement.className = "material";
 
 
         const title =
