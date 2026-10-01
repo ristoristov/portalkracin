@@ -1023,10 +1023,12 @@ async function checkExistingSession() {
     const isTeacher = await checkTeacherRole();
 
     if (isTeacher) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("teacherPanel").style.display = "block";
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("teacherPanel").style.display = "block";
 
-        loadTasks();
+    loadTasks();
+    loadMaterials();
+}
     } else {
         await supabaseClient.auth.signOut();
     }
