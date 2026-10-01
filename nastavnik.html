@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Наставнички панел | Училишен портал</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            color: #1e3a8a;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .login-button,
+        .add-button {
+            background: #2563eb;
+            color: white;
+        }
+
+        .logout-button {
+            background: #dc2626;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #eef2ff;
+        }
+
+        .task {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .task h3 {
+            color: #1e3a8a;
+            margin-top: 0;
+        }
+
+        .task-buttons button {
+            margin-right: 8px;
+        }
+
+        .delete-button {
+            background: #dc2626;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>👨‍🏫 Наставнички панел</h1>
+    <p>Училишен портал</p>
+</header>
+
+<div class="container">
+
+    <!-- НАЈАВА -->
+
+    <div id="loginBox" class="box">
+
+        <h2>🔐 Најава</h2>
+
+        <label for="email">Е-mail</label>
+        <input type="email" id="email" placeholder="Внесете e-mail">
+
+        <label for="password">Лозинка</label>
+        <input type="password" id="password" placeholder="Внесете лозинка">
+
+        <button class="login-button" onclick="login()">
+            НАЈАВИ СЕ
+        </button>
+
+        <div id="loginMessage" class="message hidden"></div>
+
+    </div>
+
+
+    <!-- НАСТАВНИЧКИ ПАНЕЛ -->
+
+    <div id="teacherPanel" class="hidden">
+
+        <div class="box">
+
+            <h2>➕ Додај домашна задача</h2>
+
+            <label for="grade">Одделение</label>
+
+            <select id="grade">
+                <option value="VI">VI одделение</option>
+                <option value="VII">VII одделение</option>
+                <option value="VIII">VIII одделение</option>
+                <option value="IX">IX одделение</option>
+            </select>
+
+
+            <label for="subject">Предмет</label>
+
+            <select id="subject">
+                <option value="Математика">Математика</option>
+                <option value="Информатика">Информатика</option>
+                <option value="Физика">Физика</option>
+                <option value="Техничко образование">Техничко образование</option>
+            </select>
+
+
+            <label for="title">Наслов</label>
+
+            <input
+                type="text"
+                id="title"
+                placeholder="Пример: Линеарни равенки"
+            >
+
+
+            <label for="description">Опис на задачата</label>
+
+            <textarea
+                id="description"
+                placeholder="Внесете ја домашната задача..."
+            ></textarea>
+
+
+            <label for="date">Датум</label>
+
+            <input type="date" id="date">
+
+
+            <label for="deadline">Рок</label>
+
+            <input type="date" id="deadline">
+
+
+            <button class="add-button" onclick="addTask()">
+                ➕ ДОДАЈ ДОМАШНА ЗАДАЧА
+            </button>
+
+            <div id="addMessage" class="message hidden"></div>
+
+        </div>
+
+
+        <!-- ПОСТОЕЧКИ ЗАДАЧИ -->
+
+        <div class="box">
+
+            <h2>📚 Веќе внесени задачи</h2>
+
+            <div id="taskList">
+                Се вчитуваат задачите...
+            </div>
+
+        </div>
+
+
+        <div class="box">
+
+            <button
+                class="logout-button"
+                onclick="logout()"
+            >
+                🚪 ОДЈАВИ СЕ
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // ======================================
+    // SUPABASE
+    // ======================================
+
+    const SUPABASE_URL =
+        "https://mxwunraqqhqmrxhjatvi.supabase.co";
+
+    const SUPABASE_KEY =
+        "sb_publishable_YDzpfdflmhyFdaeryqZe2g_SRdOnyam";
+
+    const supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+
+    // ======================================
+    // НАЈАВА
+    // ======================================
+
+    async function login() {
+
+        const email =
+            document.getElementById("email").value;
+
+        const password =
+            document.getElementById("password").value;
+
+        const message =
+            document.getElementById("loginMessage");
+
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+
+        if (error) {
+
+            message.classList.remove("hidden");
+
+            message.textContent =
+                "❌ Најавувањето не успеа. Проверете ги e-mail адресата и лозинката.";
+
+            return;
+        }
+
+
+        message.classList.add("hidden");
+
+        document
+            .getElementById("loginBox")
+            .classList.add("hidden");
+
+        document
+            .getElementById("teacherPanel")
+            .classList.remove("hidden");
+
+
+        loadTasks();
+    }
+
+
+    // ======================================
+    // ОДЈАВА
+    // ======================================
+
+    async function logout() {
+
+        await supabaseClient.auth.signOut();
+
+        document
+            .getElementById("teacherPanel")
+            .classList.add("hidden");
+
+        document
+            .getElementById("loginBox")
+            .classList.remove("hidden");
+    }
+
+
+    // ======================================
+    // ДОДАВАЊЕ ДОМАШНА ЗАДАЧА
+    // ======================================
+
+    async function addTask() {
+
+        const grade =
+            document.getElementById("grade").value;
+
+        const subject =
+            document.getElementById("subject").value;
+
+        const title =
+            document.getElementById("title").value;
+
+        const description =
+            document.getElementById("description").value;
+
+        const date =
+            document.getElementById("date").value;
+
+        const deadline =
+            document.getElementById("deadline").value;
+
+        const message =
+            document.getElementById("addMessage");
+
+
+        if (!title || !description || !date || !deadline) {
+
+            message.classList.remove("hidden");
+
+            message.textContent =
+                "⚠️ Пополнете ги сите полиња.";
+
+            return;
+        }
+
+
+        const { error } =
+            await supabaseClient
+                .from("domasni_zadaci")
+                .insert([{
+
+                    naslov: title,
+                    opis: description,
+                    predmet: subject,
+                    oddelenie: grade,
+                    datum: date,
+                    rok: deadline
+
+                }]);
+
+
+        if (error) {
+
+            console.error(error);
+
+            message.classList.remove("hidden");
+
+            message.textContent =
+                "❌ Не успеа додавањето на задачата.";
+
+            return;
+        }
+
+
+        message.classList.remove("hidden");
+
+        message.textContent =
+            "✅ Домашната задача е успешно додадена!";
+
+
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("date").value = "";
+        document.getElementById("deadline").value = "";
+
+
+        loadTasks();
+    }
+
+
+    // ======================================
+    // ПРИКАЖУВАЊЕ НА ЗАДАЧИ
+    // ======================================
+
+    async function loadTasks() {
+
+        const taskList =
+            document.getElementById("taskList");
+
+
+        const { data, error } =
+            await supabaseClient
+                .from("domasni_zadaci")
+                .select("*")
+                .order("rok", {
+                    ascending: true
+                });
+
+
+        if (error) {
+
+            taskList.textContent =
+                "❌ Не може да се вчитаат задачите.";
+
+            return;
+        }
+
+
+        if (!data || data.length === 0) {
+
+            taskList.textContent =
+                "Нема внесени задачи.";
+
+            return;
+        }
+
+
+        taskList.innerHTML = "";
+
+
+        data.forEach(task => {
+
+            const div =
+                document.createElement("div");
+
+            div.className = "task";
+
+
+            const title =
+                document.createElement("h3");
+
+            title.textContent =
+                task.naslov;
+
+
+            const description =
+                document.createElement("p");
+
+            description.textContent =
+                task.opis;
+
+
+            const info =
+                document.createElement("p");
+
+            info.textContent =
+                "📚 " + task.oddelenie +
+                " | " + task.predmet +
+                " | ⏰ Рок: " +
+                task.rok;
+
+
+            div.appendChild(title);
+            div.appendChild(description);
+            div.appendChild(info);
+
+
+            taskList.appendChild(div);
+
+        });
+
+    }
+
+</script>
+
+</body>
+</html>
